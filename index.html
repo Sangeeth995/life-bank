@@ -10,78 +10,130 @@
 
   <style>
     body {
-      margin: 0;
-      background: #0b0b0b;
-      color: #f5c76b;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      padding: 18px;
-      box-sizing: border-box;
-    }
+  margin: 0;
+  background: radial-gradient(circle at top, #111 0%, #050505 60%);
+  color: #eaeaea;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
 
-    .card {
-      width: min(520px, 100%);
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px;
-      padding: 22px;
-      text-align: center;
-    }
+/* Main glass card */
+.card {
+  width: min(600px, 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.06),
+    rgba(255,255,255,0.015)
+  );
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
 
-    .label {
-      font-size: 12px;
-      color: #aaa;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
+/* Section label */
+.label {
+  font-size: 11px;
+  color: #8a8a8a;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
 
-    .balance {
-      margin-top: 12px;
-      font-size: 42px;
-      font-weight: 800;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      color: #ffffff;
-    }
+/* Main life balance */
+.balance {
+  margin-top: 16px;
+  font-size: 58px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #ffffff;
+  text-shadow: 0 0 24px rgba(245,199,107,0.22);
+}
 
-    .sub {
-      margin-top: 8px;
-      font-size: 13px;
-      color: #9a9a9a;
-    }
+/* Small helper text */
+.sub {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #9a9a9a;
+}
 
-    .summary {
-      margin-top: 16px;
-      font-size: 14px;
-      color: #cfcfcf;
-    }
+/* Daily summary */
+.summary {
+  margin-top: 18px;
+  font-size: 14px;
+  color: #bfbfbf;
+}
 
-    .summary strong { color: #00d27a; }
+.summary strong {
+  color: #4ade80;
+  font-weight: 600;
+}
 
-    .row {
-      margin-top: 18px;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+/* Button row */
+.row {
+  margin-top: 22px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
 
-    button {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.10);
-      color: #f5c76b;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-    }
+/* Buttons */
+button {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #cfcfcf;
+  padding: 11px 16px;
+  border-radius: 14px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
 
-    button.primary {
-      border-color: rgba(245,199,107,0.35);
-      color: #fff;
-      background: rgba(245,199,107,0.12);
-    }
+button:hover {
+  background: rgba(255,255,255,0.07);
+}
+
+/* Primary action */
+button.primary {
+  background: linear-gradient(
+    180deg,
+    rgba(245,199,107,0.28),
+    rgba(245,199,107,0.12)
+  );
+  border-color: rgba(245,199,107,0.45);
+  color: #ffffff;
+}
+
+/* Settings panel */
+.settings {
+  margin-top: 26px;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 20px;
+}
+
+/* Inputs */
+input, select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #ffffff;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+/* Subtle tap hint */
+.tap-hint {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #7a7a7a;
+}
   </style>
 </head>
 <body>
@@ -166,3 +218,4 @@
 
 </body>
 </html>
+
