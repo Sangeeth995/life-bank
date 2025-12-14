@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifebank-v1';
+const CACHE_NAME = 'lifebank-v2';
 const FILES = [
   '.',
   './index.html',
@@ -19,3 +19,4 @@ self.addEventListener('fetch', evt => {
     caches.match(evt.request).then(resp => resp || fetch(evt.request))
   );
 });
+
