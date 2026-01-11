@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Life Bank</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+  body{
+    margin:0;
+    background: radial-gradient(circle at top, #141414 0%, #050505 62%);
+    color:#fff;
+    font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    display:flex; justify-content:center; align-items:center;
+    min-height:100vh; padding:20px; box-sizing:border-box;
+  }
+  .card{
+    width:min(780px, 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.015));
+    border:1px solid rgba(255,255,255,0.10);
+    border-radius:24px;
+    padding:28px;
+    box-shadow: 0 30px 90px rgba(0,0,0,0.65);
+    text-align:center;
+  }
+  .topbar{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px;}
+  .label{font-size:11px; color:#8a8a8a; letter-spacing:4px; text-transform:uppercase; text-align:left;}
+  .mini{font-size:12px; color:#9a9a9a; text-align:right; line-height:1.3;}
+  .badge{display:inline-block; margin-top:6px; padding:4px 10px; border-radius:999px; font-size:11px;
+    border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color:#cfcfcf;}
+  .badge.live{ border-color: rgba(74,222,128,0.35); color:#bff2d5; }
+  .badge.paused{ border-color: rgba(245,199,107,0.35); color:#ffe2aa; }
+
+  .balance{
+    margin-top:18px;
+    font-size:60px; font-weight:850;
+    font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    color:#ffffff;
+    text-shadow: 0 0 26px rgba(245,199,107,0.22);
+    transition: transform 0.22s ease, text-shadow 0.22s ease;
+    user-select:none; line-height:1.05;
+  }
+  .pulse{ transform: scale(1.015); }
+  .summary{margin-top:16px; font-size:14px; color:#bfbfbf;}
+  .summary strong{ color:#4ade80; font-weight:650; }
+  .reflection{margin-top:12px; font-size:13px; color:#9a9a9a; font-style:italic;}
+  .row{margin-top:22px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+  button{
+    background: rgba(255,255,255,0.045);
+    border:1px solid rgba(255,255,255,0.10);
+    color:#d6d6d6;
+    padding:11px 16px;
+    border-radius:14px;
+    font-size:13px;
+    cursor:pointer;
+    transition: background 0.2s ease, transform 0.06s ease;
+  }
+  button:hover{ background: rgba(255,255,255,0.075); }
+  button:active{ transform: scale(0.98); }
+  button.primary{
+    background: linear-gradient(180deg, rgba(245,199,107,0.28), rgba(245,199,107,0.12));
+    border-color: rgba(245,199,107,0.45);
+    color:#fff;
+  }
+
+  .settings{
+    margin-top:18px;
+    text-align:left;
+    background: rgba(0,0,0,0.38);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:18px;
+    display:none;
+  }
+  .settingsHeader{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .settingsTitle{font-weight:700; color:#e9e9e9; font-size:14px;}
+  .grid{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
+  .field label{display:block; font-size:12px; color:#a7a7a7; margin-bottom:6px;}
+  input, select{
+    width:100%; box-sizing:border-box;
+    background: rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.10);
+    border-radius:12px;
+    padding:10px 12px;
+    color:#fff; outline:none;
+  }
+  .note{margin-top:10px; font-size:12px; color:#8e8e8e; line-height:1.4;}
+  .hint{margin-top:12px; font-size:12px; color:#7a7a7a;}
+  @media (max-width:560px){
+    .balance{ font-size:46px; }
+    .grid{ grid-template-columns:1fr; }
+    .topbar{ flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="topbar">
+      <div class="label">Life Bank</div>
+      <div class="mini" id="miniText">
+        Mode: Age
+        <div class="badge live" id="statusBadge">LIVE • updating</div>
+      </div>
+    </div>
+
+    <div class="balance" id="balance">--:--:--</div>
+
+    <div class="summary" id="summary">Today you spent <strong>0.00</strong> hours</div>
+    <div class="reflection" id="reflection">Make the remaining hours count.</div>
+
+    <div class="row">
+      <button id="pauseBtn">Pause</button>
+      <button class="primary" id="resetBtn">Reset</button>
+      <button id="settingsBtn">Settings</button>
+    </div>
+
+    <div class="settings" id="settingsPanel">
+      <div class="settingsHeader">
+        <div class="settingsTitle">Settings</div>
+        <button id="closeSettingsBtn">Close</button>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label>Mode</label>
+          <select id="mode">
+            <option value="age">Enter current age</option>
+            <option value="birthdate">Use birthdate</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Life expectancy (years)</label>
+          <input type="number" id="lifeExpectancy" min="1" step="0.1" value="100">
+        </div>
+
+        <div class="field" id="ageField">
+          <label>Current age (years)</label>
+          <input type="number" id="currentAge" min="0" step="0.01" value="31">
+        </div>
+
+        <div class="field" id="birthField" style="display:none;">
+          <label>Birthdate</label>
+          <input type="date" id="birthdate">
+        </div>
+      </div>
+
+      <div class="row" style="justify-content:flex-start; margin-top:14px;">
+        <button class="primary" id="saveBtn">Save</button>
+        <button id="defaultsBtn">Defaults</button>
+      </div>
+
+      <div class="note">
+        • Age mode: entered age is treated as “right now”, then it ticks forward.<br>
+        • Birthdate mode: age is calculated automatically.
+      </div>
+    </div>
+
+    <div class="hint">Tip: tap the balance to copy</div>
+  </div>
+
+<script>
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+
+  const STORAGE_KEY = "lifebank_settings_v2";
+  const defaults = { mode:"age", currentAge:31, birthdate:"", lifeExpectancy:100 };
+
+  function loadSettings(){
+    try{ const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? { ...defaults, ...JSON.parse(raw) } : { ...defaults };
+    }catch(e){ return { ...defaults }; }
+  }
+  function saveSettingsObj(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+
+  let settings = loadSettings();
+
+  const balanceEl = document.getElementById("balance");
+  const summaryEl = document.getElementById("summary");
+  const reflectionEl = document.getElementById("reflection");
+  const miniTextEl = document.getElementById("miniText");
+  const statusBadge = document.getElementById("statusBadge");
+
+  const settingsPanel = document.getElementById("settingsPanel");
+  const settingsBtn = document.getElementById("settingsBtn");
+  const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+
+  const modeEl = document.getElementById("mode");
+  const lifeExpEl = document.getElementById("lifeExpectancy");
+  const currentAgeEl = document.getElementById("currentAge");
+  const birthdateEl = document.getElementById("birthdate");
+  const ageField = document.getElementById("ageField");
+  const birthField = document.getElementById("birthField");
+
+  const saveBtn = document.getElementById("saveBtn");
+  const defaultsBtn = document.getElementById("defaultsBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  // Anchor makes Age mode tick
+  let anchorTime = new Date();
+  let anchorAge = Number(settings.currentAge);
+
+  let paused = false;
+  let lastSecond = null;
+  let lastHour = null;
+
+  function setStatus(){
+    if(paused){
+      statusBadge.className = "badge paused";
+      statusBadge.textContent = "PAUSED";
+    } else {
+      statusBadge.className = "badge live";
+      statusBadge.textContent = "LIVE • updating";
+    }
+  }
+
+  function ageFromBirthdate(now){
+    const bd = new Date(settings.birthdate + "T00:00:00");
+    const ms = now - bd;
+    return ms / (1000*60*60*24*365.25);
+  }
+
+  function ageFromAnchor(now){
+    const yearsPassed = (now - anchorTime) / (1000*60*60*24*365.25);
+    return anchorAge + yearsPassed;
+  }
+
+  function currentAgeNow(now){
+    if(settings.mode === "birthdate" && settings.birthdate){
+      return ageFromBirthdate(now);
+    }
+    return ageFromAnchor(now);
+  }
+
+  function remainingHours(now){
+    const lifeExp = Number(settings.lifeExpectancy);
+    const age = currentAgeNow(now);
+    const yearsRemaining = Math.max(0, lifeExp - age);
+    return yearsRemaining * 365.25 * 24;
+  }
+
+  function render(){
+    const now = new Date();
+    const rem = remainingHours(now);
+
+    const h = Math.floor(rem);
+    const m = Math.floor((rem - h) * 60);
+    const s = Math.floor((((rem - h) * 60) - m) * 60);
+
+    balanceEl.textContent =
+      h.toLocaleString() + ":" +
+      String(m).padStart(2,"0") + ":" +
+      String(s).padStart(2,"0");
+
+    if(s !== lastSecond){
+      balanceEl.classList.add("pulse");
+      setTimeout(()=>balanceEl.classList.remove("pulse"), 180);
+      lastSecond = s;
+    }
+
+    if(h !== lastHour){
+      balanceEl.style.textShadow = "0 0 40px rgba(74,222,128,0.55)";
+      setTimeout(()=> balanceEl.style.textShadow = "0 0 26px rgba(245,199,107,0.22)", 600);
+      lastHour = h;
+    }
+
+    const startOfDay = new Date(); startOfDay.setHours(0,0,0,0);
+    const hoursToday = (now - startOfDay)/(1000*60*60);
+    summaryEl.innerHTML = `Today you spent <strong>${hoursToday.toFixed(2)}</strong> hours`;
+
+    if(now.getHours() >= 22) reflectionEl.textContent = "The day is ending. Did it matter?";
+    else if(now.getHours() >= 18) reflectionEl.textContent = "Evenings decide the direction of days.";
+    else reflectionEl.textContent = "Make the remaining hours count.";
+
+    const age = currentAgeNow(now);
+    miniTextEl.firstChild.textContent =
+      `Mode: ${settings.mode === "birthdate" ? "Birthdate" : "Age"} (Age: ${age.toFixed(4)})`;
+  }
+
+  function tick(){ setStatus(); if(!paused) render(); }
+
+  function applySettingsToUI(){
+    modeEl.value = settings.mode;
+    lifeExpEl.value = settings.lifeExpectancy;
+    currentAgeEl.value = settings.currentAge;
+    birthdateEl.value = settings.birthdate;
+
+    const birthMode = settings.mode === "birthdate";
+    birthField.style.display = birthMode ? "block" : "none";
+    ageField.style.display = birthMode ? "none" : "block";
+  }
+
+  modeEl.addEventListener("change", ()=>{
+    settings.mode = modeEl.value;
+    applySettingsToUI();
+  });
+
+  pauseBtn.addEventListener("click", ()=>{
+    paused = !paused;
+    pauseBtn.textContent = paused ? "Resume" : "Pause";
+    setStatus();
+    if(!paused) render();
+  });
+
+  resetBtn.addEventListener("click", ()=>{
+    // Re-anchor age mode to now, using the entered age
+    anchorTime = new Date();
+    anchorAge = Number(settings.currentAge);
+    paused = false;
+    pauseBtn.textContent = "Pause";
+    lastSecond = null; lastHour = null;
+    setStatus();
+    render();
+  });
+
+  settingsBtn.addEventListener("click", ()=>{
+    applySettingsToUI();
+    settingsPanel.style.display = "block";
+  });
+
+  closeSettingsBtn.addEventListener("click", ()=>{ settingsPanel.style.display = "none"; });
+
+  saveBtn.addEventListener("click", ()=>{
+    settings.mode = modeEl.value;
+    settings.lifeExpectancy = Number(lifeExpEl.value || defaults.lifeExpectancy);
+    settings.currentAge = Number(currentAgeEl.value || defaults.currentAge);
+    settings.birthdate = birthdateEl.value || "";
+    saveSettingsObj(settings);
+
+    // Important: when you save in Age mode, re-anchor so it ticks
+    anchorTime = new Date();
+    anchorAge = Number(settings.currentAge);
+
+    paused = false;
+    pauseBtn.textContent = "Pause";
+    lastSecond = null; lastHour = null;
+    setStatus();
+
+    settingsPanel.style.display = "none";
+    render();
+  });
+
+  defaultsBtn.addEventListener("click", ()=>{
+    settings = { ...defaults };
+    saveSettingsObj(settings);
+
+    anchorTime = new Date();
+    anchorAge = Number(settings.currentAge);
+
+    paused = false;
+    pauseBtn.textContent = "Pause";
+    lastSecond = null; lastHour = null;
+    setStatus();
+
+    applySettingsToUI();
+    render();
+  });
+
+  balanceEl.addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText(balanceEl.textContent); }catch(e){}
+  });
+
+  // Init
+  setStatus();
+  applySettingsToUI();
+  anchorTime = new Date();
+  anchorAge = Number(settings.currentAge);
+  render();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
